@@ -2,14 +2,24 @@
 
 ## Overview
 
-This is the challenge application for M4: SHIP IT of the Docker × Jenkins Bootcamp.
+This is the challenge application for M4: SHIP IT of the Docker x Jenkins Bootcamp.
 
 ## Application Details
 
-- **Port**: 3000
+- **Port**: 3000 (internal)
 - **Language**: Node.js
 - **Framework**: Express.js
 - **Token Endpoint**: `/token`
+
+## Challenge Overview
+
+In M4, you will:
+1. Clone this repository
+2. Create your own Dockerfile from scratch
+3. Create your own Jenkinsfile from scratch
+4. Deploy with your team's SHIP_TOKEN
+5. Retrieve token from `/token` endpoint
+6. Submit on Mission Control
 
 ## Running Locally
 
@@ -24,6 +34,18 @@ npm start
 npm test
 ```
 
+Then visit:
+- App: http://localhost:3000
+- Token: http://localhost:3000/token
+
+## Application Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Main page with token display |
+| `/token` | GET | Returns JSON: `{"token": "SHIP-XXXX-XXXX"}` |
+| `/health` | GET | Health check: `{"status": "ok"}` |
+
 ## Environment Variables
 
 | Variable | Description | Required |
@@ -32,48 +54,35 @@ npm test
 | `NODE_ENV` | Environment (production/development) | No |
 | `SHIP_TOKEN` | Team's unique deployment token | **Yes** |
 
-## Example
+## Docker Requirements
 
-```bash
-SHIP_TOKEN=SHIP-A82F-19D4 npm start
-```
+Your Dockerfile should:
+- Use Node.js as base image (node:20-alpine recommended)
+- Set WORKDIR to /app
+- Copy package*.json and run npm install
+- Copy application source
+- Expose port 3000
+- Set CMD to start node src/index.js
 
-Then visit:
-- App: http://localhost:3000
-- Token: http://localhost:3000/token
+## Jenkinsfile Requirements
 
-## Endpoints
+Your Jenkinsfile must have 4 stages:
+1. **Build** - npm install
+2. **Test** - npm test (tests must pass!)
+3. **Image** - docker build
+4. **Deploy** - docker run with SHIP_TOKEN
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | Main page with token display |
-| `/token` | GET | Returns JSON: `{"token": "SHIP-XXXX-XXXX"}` |
-| `/health` | GET | Health check: `{"status": "ok"}` |
-
-## Docker
+## Deployment
 
 Build and run with Docker:
-
 ```bash
 docker build -t ship-it:v1 .
-docker run -d -p 3000:3000 -e SHIP_TOKEN=SHIP-A82F-19D4 ship-it:v1
+docker run -d -p 3004:3000 -e SHIP_TOKEN=YOUR_TOKEN ship-it:v1
 ```
 
-## Challenge Flow
+## Important Notes
 
-1. Clone this repository
-2. Create your own `Dockerfile`
-3. Create your own `Jenkinsfile`
-4. Set up CI/CD pipeline
-5. Deploy with your team's `SHIP_TOKEN`
-6. Retrieve token from `/token` endpoint
-7. Submit on Mission Control
-
-## For Organizers
-
-Generate unique tokens for each team and share them securely. Each team needs:
-1. Their unique `SHIP_TOKEN`
-2. The repository URL
-3. This README
-
-The token format is: `SHIP-XXXX-XXXX`
+- Tests must pass for M4 completion
+- Each team has a unique SHIP_TOKEN
+- The Dockerfile and Jenkinsfile must be created BY YOU - not copied
+- Port 3004 is used for M4 to avoid conflicts with M1/M2/M3
