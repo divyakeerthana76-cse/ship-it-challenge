@@ -1,0 +1,61 @@
+// Ship It Challenge - Jenkinsfile Template
+// Students will create this file from scratch
+
+pipeline {
+    agent any
+    
+    environment {
+        IMAGE_NAME = "ship-it-challenge"
+        CONTAINER_NAME = "ship-it"
+        PORT = "3000"
+    }
+    
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Installing dependencies...'
+                sh 'npm ci || npm install'
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'npm test || true'
+            }
+        }
+        
+        stage('Image') {
+            steps {
+                echo 'Building Docker image...'
+                sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${IMAGE_NAME}:latest"
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                echo 'Deploying container...'
+                sh """
+                    docker rm -f ${CONTAINER_NAME} 2>/dev/null || true
+                    docker run -d \
+                        --name ${CONTAINER_NAME} \
+                        -p ${PORT}:${PORT} \
+                        -e SHIP_TOKEN=${SHIP_TOKEN} \
+                        ${IMAGE_NAME}:latest
+                """
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo '🚀 Deployment successful!'
+            echo "Build #${BUILD_NUMBER} deployed"
+            sh 'docker ps'
+        }
+        always {
+            echo 'Pipeline completed'
+        }
+    }
+}
